@@ -1,0 +1,49 @@
+# Maintainer: CharOfString <root@charofstring.cc>
+pkgname=gxde-polkit-agent-git
+pkgver=1.0.2
+pkgrel=1
+pkgdesc='PolicyKit authentication agent for GXDE (DTK2)'
+arch=('x86_64' 'aarch64')
+url="https://github.com/GXDE-OS/gxde-polkit-agent"
+license=('GPL-3.0-or-later')
+depends=('dtkwidget2-git' 'dtkcore-git' 'deepin-qt-dbus-factory-git' 'polkit-qt5' 'qt5-base'
+         'libgcc' 'libstdc++' 'glibc')
+# Debian 中是硬依赖；但该插件构建时需要本包的头文件，makepkg -s 会先装 depends，
+# 硬依赖会形成循环，因此改为可选（插件从插件目录加载）
+# A hard dependency on Debian, but the plugin needs this package's headers to
+# build and makepkg -s installs depends first, so a hard dependency would be
+# circular.  It is optional here (plugins are loaded from the plugin dir).
+optdepends=('dpa-ext-gnomekeyring-git: unlock the GNOME keyring on authentication')
+makedepends=('git' 'qt5-tools' 'dtkwidget2-dev-git')
+# Debian 把插件头文件拆到 -dev 包，这里没有文件冲突，按 Arch 惯例合并
+# Debian splits the plugin headers into a -dev package; nothing collides
+# here, so they stay in the main package as usual on Arch.
+provides=('gxde-polkit-agent' 'deepin-polkit-agent')
+conflicts=('gxde-polkit-agent' 'deepin-polkit-agent')
+source=()
+sha512sums=()
+
+# 直接使用 PKGBUILD 所在的 git 仓库作为源码 ・ Build from the git checkout this PKGBUILD lives in.
+_srcroot() {
+  git -C "$startdir" rev-parse --show-toplevel
+}
+
+build() {
+  # translate_generation.sh 按当前目录查找 translations/*.ts，影子构建时找不到，先在源码目录生成 .qm
+  # translate_generation.sh looks for translations/*.ts in the current
+  # directory, which a shadow build lacks, so generate the .qm files in the
+  # source tree first.
+  export PATH="/usr/lib/qt/bin:$PATH"
+  (cd "$(_srcroot)" && bash translate_generation.sh)
+  mkdir -p build
+  cd build
+  qmake-qt5 "$(_srcroot)/dde-polkit-agent.pro" \
+    QMAKE_CFLAGS_RELEASE="$CFLAGS" \
+    QMAKE_CXXFLAGS_RELEASE="$CXXFLAGS" \
+    QMAKE_LFLAGS_RELEASE="$LDFLAGS"
+  make
+}
+
+package() {
+  make -C build INSTALL_ROOT="$pkgdir" install
+}
