@@ -89,6 +89,9 @@ private:
     bool m_gainedAuthorization;
     bool m_wasCancelled;
     bool m_usePassword;
+    // Decided per request by DeepinAuthAvailable(): fingerprint and
+    // dde-authority, or the password straight to polkit.
+    bool m_useDeepinAuth;
     int m_numTries;
     int m_numFPrint;
 

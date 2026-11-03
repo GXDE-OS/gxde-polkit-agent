@@ -34,12 +34,14 @@
 #include "pluginmanager.h"
 
 #include "libdde-auth/deepinauthframework.h"
+#include "deepinauthcheck.h"
 
 PolicyKitListener::PolicyKitListener(QObject *parent)
         : Listener(parent)
         , m_selectedUser(0)
         , m_inProgress(false)
         , m_usePassword(false)
+        , m_useDeepinAuth(false)
         , m_numFPrint(0)
 {
     (void) new Polkit1AuthAgentAdaptor(this);
@@ -164,6 +166,7 @@ void PolicyKitListener::initiateAuthentication(const QString &actionId,
     }
 
     m_numTries = 0;
+    m_useDeepinAuth = DeepinAuthAvailable();
     tryAgain();
 }
 
@@ -185,19 +188,19 @@ void PolicyKitListener::tryAgain()
 
         const QString username { m_selectedUser.toString().replace("unix-user:", "") };
 
-#ifdef ENABLE_DEEPIN_AUTH
-        m_dialog->setAuthMode(
-            (m_fprintdDeviceInter &&
-             !m_fprintdDeviceInter->ListEnrolledFingers(username).value().isEmpty())
-                ? AuthDialog::FingerPrint
-                : AuthDialog::Password);
+        if (m_useDeepinAuth) {
+            m_dialog->setAuthMode(
+                (m_fprintdDeviceInter &&
+                 !m_fprintdDeviceInter->ListEnrolledFingers(username).value().isEmpty())
+                    ? AuthDialog::FingerPrint
+                    : AuthDialog::Password);
 
-        m_deepinAuthFramework->Clear();
-        m_deepinAuthFramework->SetUser(username);
-        m_deepinAuthFramework->Authenticate();
-#else
-        m_dialog->setAuthMode(AuthDialog::Password);
-#endif
+            m_deepinAuthFramework->Clear();
+            m_deepinAuthFramework->SetUser(username);
+            m_deepinAuthFramework->Authenticate();
+        } else {
+            m_dialog->setAuthMode(AuthDialog::Password);
+        }
     }
 }
 
@@ -300,16 +303,16 @@ void PolicyKitListener::dialogAccepted()
 {
     if (!m_dialog.isNull()) {
         qDebug() << "Dialog accepted";
-#ifdef ENABLE_DEEPIN_AUTH
-        m_deepinAuthFramework->Clear();
-        m_deepinAuthFramework->SetUser(m_selectedUser.toString().remove("unix-user:"));
-        m_deepinAuthFramework->setPassword(m_dialog->password());
-        m_deepinAuthFramework->Authenticate();
-#else
-        m_password = m_dialog->password();
-        m_session->initiate();
-        m_session->setResponse(m_password);
-#endif
+        if (m_useDeepinAuth) {
+            m_deepinAuthFramework->Clear();
+            m_deepinAuthFramework->SetUser(m_selectedUser.toString().remove("unix-user:"));
+            m_deepinAuthFramework->setPassword(m_dialog->password());
+            m_deepinAuthFramework->Authenticate();
+        } else {
+            m_password = m_dialog->password();
+            m_session->initiate();
+            m_session->setResponse(m_password);
+        }
     }
 }
 

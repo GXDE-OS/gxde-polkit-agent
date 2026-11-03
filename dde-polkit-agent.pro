@@ -13,13 +13,15 @@ SOURCES += policykitlistener.cpp \
     main.cpp \
     errortooltip.cpp \
     usersmanager.cpp \
-    pluginmanager.cpp
+    pluginmanager.cpp \
+    deepinauthcheck.cpp
 
 HEADERS += policykitlistener.h \
     AuthDialog.h \
     errortooltip.h \
     usersmanager.h \
     pluginmanager.h \
+    deepinauthcheck.h \
     agent-extension.h \
     agent-extension-proxy.h
 
@@ -34,10 +36,6 @@ TRANSLATIONS = translations/gxde-polkit-agent.ts
 # Automating generation .qm files from .ts files
 CONFIG(release, debug|release) {
     system($$PWD/translate_generation.sh)
-}
-
-deepin {
-    DEFINES += ENABLE_DEEPIN_AUTH
 }
 
 target.path = /usr/lib/polkit-1-dde
