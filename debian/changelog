@@ -1,3 +1,9 @@
+gxde-polkit-agent (1.0.3) UNRELEASED; urgency=medium
+
+  * 在GXDE上尝试启用指纹支持
+
+ -- CharOfString <root@charofstring.cc> Tue, 03 Nov 2026 01:39:49 -0600
+
 gxde-polkit-agent (1.0.2) UNRELEASED; urgency=medium
 
   * dde-polkit-agent=>gxde-polkit-agent
