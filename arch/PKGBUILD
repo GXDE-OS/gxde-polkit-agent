@@ -1,25 +1,26 @@
 # Maintainer: CharOfString <root@charofstring.cc>
-pkgname=gxde-polkit-agent-git
+pkgname=gxde-polkit-agent
 pkgver=1.0.3
 pkgrel=1
 pkgdesc='PolicyKit authentication agent for GXDE (DTK2)'
 arch=('x86_64' 'aarch64')
 url="https://github.com/GXDE-OS/gxde-polkit-agent"
 license=('GPL-3.0-or-later')
-depends=('dtkwidget2-git' 'dtkcore-git' 'deepin-qt-dbus-factory-git' 'polkit-qt5' 'qt5-base'
+depends=('dtkwidget2' 'gxde-dtkcore' 'gxde-deepin-qt-dbus-factory' 'polkit-qt5' 'qt5-base'
          'libgcc' 'libstdc++' 'glibc')
 # Debian 中是硬依赖；但该插件构建时需要本包的头文件，makepkg -s 会先装 depends，
 # 硬依赖会形成循环，因此改为可选（插件从插件目录加载）
 # A hard dependency on Debian, but the plugin needs this package's headers to
 # build and makepkg -s installs depends first, so a hard dependency would be
 # circular.  It is optional here (plugins are loaded from the plugin dir).
-optdepends=('dpa-ext-gnomekeyring-git: unlock the GNOME keyring on authentication')
-makedepends=('git' 'qt5-tools' 'dtkwidget2-dev-git')
+optdepends=('dpa-ext-gnomekeyring: unlock the GNOME keyring on authentication')
+makedepends=('git' 'qt5-tools' 'dtkwidget2-dev')
 # Debian 把插件头文件拆到 -dev 包，这里没有文件冲突，按 Arch 惯例合并
 # Debian splits the plugin headers into a -dev package; nothing collides
 # here, so they stay in the main package as usual on Arch.
-provides=('gxde-polkit-agent' 'deepin-polkit-agent')
-conflicts=('gxde-polkit-agent' 'deepin-polkit-agent')
+provides=('deepin-polkit-agent' "gxde-polkit-agent-git=$pkgver")
+conflicts=('deepin-polkit-agent' 'gxde-polkit-agent-git')
+replaces=('gxde-polkit-agent-git')
 source=()
 sha512sums=()
 
